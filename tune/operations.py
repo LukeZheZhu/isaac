@@ -1,3 +1,4 @@
+from __future__ import division
 import isaac as sc
 import numpy as np
 import itertools
