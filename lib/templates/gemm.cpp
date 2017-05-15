@@ -628,8 +628,8 @@ std::string GEMM::dump(drv::Device const & device, std::string const & name){
     for(size_t mn = 0; mn < ml*nl; mn += bmn)
       iss << format("  .reg .{0} %rrk{1}_0, %rrk{1}_1;", ab_dtype, mn) << std::endl;
 
-    iss << format("  mad.lo.u32 %writek, %idr, {}, %shared;", ml*nl*dtsize) << std::endl;
-    iss << format("  mad.lo.u32 %writek, %idmn, {}, %writek;", ms_*ns_*dtsize) << std::endl;
+    iss << format("  vmad.u32.u32.u32 %writek, %idr.h0, {}, %shared;", ml*nl*dtsize) << std::endl;
+    iss << format("  vmad.u32.u32.u32 %writek, %idmn.h0, {}, %writek;", ms_*ns_*dtsize) << std::endl;
 
     iss << "  bar.sync 0;" << std::endl;
     for(size_t n = 0; n < ns_; n ++)
@@ -643,8 +643,8 @@ std::string GEMM::dump(drv::Device const & device, std::string const & name){
     iss << std::endl;
     iss << format("  div.u32 %rid_mn, %id, {};", br_) << std::endl;
     iss << format("  rem.u32 %rid_k, %id, {};", br_) << std::endl;
-    iss << format("  mad.lo.u32 %readk, %rid_k, {}, %shared;", ml*nl*dtsize) << std::endl;
-    iss << format("  mad.lo.u32 %readk, %rid_mn, {}, %readk;", dtsize) << std::endl;
+    iss << format("  vmad.u32.u32.u32 %readk, %rid_k.h0, {}, %shared;", ml*nl*dtsize) << std::endl;
+    iss << format("  vmad.u32.u32.u32 %readk, %rid_mn.h0, {}, %readk;", dtsize) << std::endl;
     for(size_t c = br_/2; c > 0; c /=2){
       iss << format("  setp.lt.u32 %predr, %rid_k, {};", c) << std::endl;
       for(size_t mn = 0; mn < ml*nl; mn += bmn){
@@ -657,7 +657,7 @@ std::string GEMM::dump(drv::Device const & device, std::string const & name){
     }
 
 
-    iss << format("  mad.lo.u32 %readk, %idmn, {}, %shared;", ms_*ns_*dtsize) << std::endl;
+    iss << format("  vmad.u32.u32.u32 %readk, %idmn.h0, {}, %shared;", ms_*ns_*dtsize) << std::endl;
     for(size_t n = 0; n < ns_; n ++)
     for(size_t m = 0; m < ms_; m += vec_*dtvec)
     for(size_t s = 0; s < vec_; s++){
