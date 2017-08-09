@@ -54,8 +54,13 @@ private:
 
 public:
   //Constructors
+#ifdef _MSC_VER
+  Buffer(CUdeviceptr h, bool take_ownership = true);
+  Buffer(cl_mem Buffer = nullptr, bool take_ownership = true);
+#else
   Buffer(CUdeviceptr h = 0, bool take_ownership = true);
   Buffer(cl_mem Buffer = 0, bool take_ownership = true);
+#endif
   Buffer(Context const & context, size_t size);
   //Accessors
   handle_type&  handle();
